@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nest keys demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF0FF;--bg2:#F7E9F3;--ink:#1A1633;--mute:#5E5A7D;--card:rgba(255,255,255,.75);--line:rgba(60,40,140,.2);--vio:#6A4BFF;--cor:#C23A1B;--mint:#0E8F7A;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0D24;--bg2:#1E0F33;--ink:#EAEBFF;--mute:#A4A6D0;--card:rgba(30,34,78,.62);--line:rgba(160,150,255,.24);--vio:#8F7BFF;--cor:#FF7A59;--mint:#5CE1C6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A0D24;--bg2:#1E0F33;--ink:#EAEBFF;--mute:#A4A6D0;--card:rgba(30,34,78,.62);--line:rgba(160,150,255,.24);--vio:#8F7BFF;--cor:#FF7A59;--mint:#5CE1C6;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:radial-gradient(120% 70% at 50% 0,var(--bg2),var(--bg) 70%) fixed;color:var(--ink);font:400 16px/1.45 "Atkinson Hyperlegible",system-ui,sans-serif;max-width:600px;margin:0 auto;padding:16px 16px 40px}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--vio);outline-offset:2px}
+h1{font:800 1.6em Syne,sans-serif;margin:0 0 2px;letter-spacing:-.02em}
+h2{font:700 1.05em Syne,sans-serif;margin:0 0 6px}
+.sub{color:var(--mute)}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:14px;margin:12px 0;backdrop-filter:blur(10px)}
+.big{width:100%;padding:14px;border:0;border-radius:14px;background:var(--vio);color:#fff;font-weight:700}
+.sm{padding:6px 12px;border-radius:99px;border:1.5px solid var(--line);background:none;font-weight:700;font-size:.85em}
+.fp{font:700 1.05em ui-monospace,Menlo,monospace;letter-spacing:.04em;word-spacing:.3em;overflow-wrap:anywhere}
+.safe{border-color:var(--mint)}
+.safe .fp{color:var(--mint)}
+.msg{padding:8px 12px;border-radius:14px;margin:6px 0;width:fit-content;max-width:90%;background:var(--bg);border:1.5px solid var(--line)}
+.msg.bad{border-color:var(--cor);color:var(--cor)}
+.row{display:flex;gap:8px;margin-top:8px}
+input{flex:1;min-width:0;padding:10px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--bg)}
+.send{padding:0 18px;border:0;border-radius:99px;background:var(--vio);color:#fff;font-weight:700}
+.relay{border-style:dashed}
+code{display:block;font:.8em/1.4 ui-monospace,Menlo,monospace;color:var(--mute);overflow-wrap:anywhere;margin:4px 0}
+.rw{border-top:1px solid var(--line);padding:8px 0}
+.note{font-size:.85em;color:var(--mute)}
+</style></head><body>
+<h1>Nest keys</h1>
+<div class="sub">Runs only in your browser. Nothing is uploaded.</div>
+<div id="app"></div>
+<script>
+const $=s=>document.querySelector(s),enc=new TextEncoder(),dec=new TextDecoder();
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const N={a:'You',b:'Priya'};
+let K=null,msgs=[],inbox={a:[],b:[]},persist=true,ok=!!(window.crypto&&crypto.subtle);
+const db=()=>new Promise((res,rej)=>{const r=indexedDB.open('nest-demo',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const idb=async(m,k,v)=>{const d=await db();return new Promise((res,rej)=>{const s=d.transaction('k',m=='get'?'readonly':'readwrite').objectStore('k');const q=m=='get'?s.get(k):m=='set'?s.put(v,k):s.delete(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})};
+const group=h=>h.toUpperCase().match(/.{4}/g).join(' ');
+async function info(d){const raw=await crypto.subtle.exportKey('raw',d.pub);d.raw=hex(raw);d.fp=group(hex(await crypto.subtle.digest('SHA-256',raw)).slice(0,16))}
+async function safety(){const [x,y]=[K.a.raw,K.b.raw].sort();return group(hex(await crypto.subtle.digest('SHA-256',enc.encode(x+y))).slice(0,20))}
+async function make(){K={};for(const d of['a','b']){const p=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},false,['deriveKey']);K[d]={priv:p.privateKey,pub:p.publicKey};await info(K[d])}K.safe=await safety();try{await idb('set','keys',{a:{priv:K.a.priv,pub:K.a.pub},b:{priv:K.b.priv,pub:K.b.pub}})}catch(e){persist=false}msgs=[];inbox={a:[],b:[]};draw()}
+async function load(){if(!ok)return draw();try{const s=await idb('get','keys');if(s){K={a:s.a,b:s.b};await info(K.a);await info(K.b);K.safe=await safety()}}catch(e){persist=false}draw()}
+async function reset(){try{await idb('del','keys')}catch(e){}K=null;msgs=[];inbox={a:[],b:[]};draw()}
+const aes=(me,peer)=>crypto.subtle.deriveKey({name:'ECDH',public:K[peer].pub},K[me].priv,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+async function send(from){const to=from=='a'?'b':'a',i=$('#in-'+from),t=i.value.trim();if(!t)return;const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},await aes(from,to),enc.encode(t));const m={id:msgs.length+1,from,to,iv:b64(iv),ct:b64(ct)};msgs.push(m);await deliver(m);$('#in-'+from).focus()}
+async function deliver(m,tamper){const ct=unb64(m.ct);if(tamper)ct[0]^=1;try{const p=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(m.iv)},await aes(m.to,m.from),ct);inbox[m.to].push({ok:1,x:dec.decode(p)})}catch(e){inbox[m.to].push({ok:0,x:'Blocked: this message was changed on the way, so it was refused.'})}draw()}
+function phone(d){return `<div class="card"><h2>${N[d]}’s phone</h2><div class="sub">Public key fingerprint</div><div class="fp">${K[d].fp}</div>${inbox[d].map(m=>`<div class="msg ${m.ok?'':'bad'}">${esc(m.x)}</div>`).join('')||'<div class="note">No messages received yet.</div>'}<div class="row"><input id="in-${d}" placeholder="Message ${N[d=='a'?'b':'a']}" aria-label="Message ${N[d=='a'?'b':'a']}"><button class="send" data-a="send" data-v="${d}">Send</button></div></div>`}
+function draw(){const a=$('#app');
+ if(!ok){a.innerHTML='<div class="card">This browser does not support the security features this demo needs. Try a current version of Chrome, Safari or Firefox.</div>';return}
+ if(!K){a.innerHTML=`<div class="card"><h2>Step 1: make your keys</h2><p>Each phone creates its own lock-and-key pair. The private key is created inside the browser and set so it cannot be exported, not even by this page.</p><button class="big" data-a="make">Create keys for both phones</button></div>`;return}
+ a.innerHTML=`${persist?'':'<div class="card note">Private browsing: keys last only until you close this page.</div>'}
+ <div class="card safe"><h2>Safety number</h2><div class="fp">${K.safe}</div><p class="note">Both phones compute the same number from their public keys. Compare it in person or on a call. If it matches, nobody is sitting in the middle.</p></div>
+ ${phone('a')}
+ <div class="card relay"><h2>What Nest’s server sees</h2><div class="note">Only scrambled data. It cannot read it, and it cannot change it without being caught.</div>${msgs.map(m=>`<div class="rw"><b>#${m.id}</b> ${N[m.from]} to ${N[m.to]} · ${unb64(m.ct).length} bytes<code>${m.ct.slice(0,96)}${m.ct.length>96?'…':''}</code><button class="sm" data-a="tamper" data-v="${m.id}">Tamper with it and re-deliver</button></div>`).join('')||'<div class="note" style="margin-top:8px">Nothing sent yet. Send a message from either phone.</div>'}</div>
+ ${phone('b')}
+ <div class="card"><p class="note"><b>What this proves:</b> keys made on the device, messages locked so only the other phone can open them, and any change on the way is detected. <b>What it is not:</b> the real app will use audited Signal-protocol libraries, which also change keys with every message so one stolen key cannot unlock history. Passkey unlock needs your real website address, so it comes next.</p><button class="sm" data-a="reset">Delete keys and start over</button></div>`}
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a,v=el.dataset.v;if(a=='make')make();else if(a=='reset')reset();else if(a=='send')send(v);else if(a=='tamper')deliver(msgs.find(m=>m.id==v),1)});
+document.addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id&&e.target.id.startsWith('in-'))send(e.target.id.slice(3))});
+load();
+</script></body></html>

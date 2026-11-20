@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nest Orbit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF0FF;--bg2:#F7E9F3;--ink:#1A1633;--mute:#5E5A7D;--card:rgba(255,255,255,.72);--line:rgba(60,40,140,.18);--vio:#6A4BFF;--cor:#E8502F;--mint:#0E8F7A;--fs:16px;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0D24;--bg2:#1E0F33;--ink:#EAEBFF;--mute:#A4A6D0;--card:rgba(30,34,78,.62);--line:rgba(160,150,255,.22);--vio:#8F7BFF;--cor:#FF7A59;--mint:#5CE1C6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A0D24;--bg2:#1E0F33;--ink:#EAEBFF;--mute:#A4A6D0;--card:rgba(30,34,78,.62);--line:rgba(160,150,255,.22);--vio:#8F7BFF;--cor:#FF7A59;--mint:#5CE1C6;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(120% 70% at 50% 0,var(--bg2),var(--bg) 70%) fixed;color:var(--ink);font:400 var(--fs)/1.45 "Atkinson Hyperlegible",system-ui,sans-serif;max-width:560px;margin:0 auto;display:flex;flex-direction:column}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--vio);outline-offset:2px}
+header{padding:12px 16px 4px;display:flex;align-items:center;gap:10px}
+h1{font:800 1.5em Syne,sans-serif;margin:0;flex:1;letter-spacing:-.02em}
+.pill{padding:8px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);font-weight:700;backdrop-filter:blur(10px)}
+.pill.hot{background:var(--vio);border-color:var(--vio);color:#fff}
+.lens{display:flex;gap:6px;padding:4px 16px}
+.lens button{flex:1;padding:6px;border-radius:10px;border:1.5px solid var(--line);background:none;font-size:.85em}
+.lens button[aria-pressed=true]{border-color:var(--vio);background:var(--card);font-weight:700}
+main{flex:1;overflow-y:auto;padding:0 16px 20px}
+.orbit{position:relative;width:100%;aspect-ratio:1;margin:6px 0}
+.ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1.5px dashed var(--line);border-radius:50%}
+.you{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font:800 .9em Syne;background:var(--ink);color:var(--bg)}
+.orb{position:absolute;transform:translate(-50%,-50%);width:var(--s);height:var(--s);border-radius:50%;border:0;display:grid;place-items:center;font-weight:700;font-size:.8em;color:#fff;background:radial-gradient(circle at 32% 28%,hsl(var(--h) 95% 72%),hsl(var(--h) 75% 42%));box-shadow:0 6px 22px hsl(var(--h) 80% 40%/.45)}
+.orb i{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:var(--ink);color:var(--bg);font:700 .75em/22px "Atkinson Hyperlegible";font-style:normal;text-align:center;padding:0 5px}
+.orb.pulse{animation:pl 2.2s ease-in-out infinite}
+@keyframes pl{50%{box-shadow:0 0 0 12px hsl(var(--h) 90% 60%/.18),0 6px 26px hsl(var(--h) 80% 45%/.6)}}
+@media(prefers-reduced-motion:reduce){.orb.pulse{animation:none}}
+.cap{color:var(--mute);font-size:.82em;text-align:center;margin:0 0 12px}
+h2{font:700 1em Syne;margin:14px 0 8px}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:12px 14px;margin-bottom:10px;backdrop-filter:blur(10px)}
+.card p{margin:4px 0 8px}
+.card.need{border-color:var(--cor)}
+.card small,.sub{color:var(--mute)}
+.wait{display:block;width:100%;text-align:left}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts button,.sm{padding:7px 13px;border-radius:99px;border:1.5px solid var(--line);background:none;font-weight:700;font-size:.9em}
+.acts .go{background:var(--vio);border-color:var(--vio);color:#fff}
+.top2{display:flex;align-items:center;gap:10px;padding:12px 16px 4px}
+.top2 b{font:800 1.2em Syne}
+.tabs{display:flex;gap:6px;padding:6px 16px}
+.tabs button{flex:1;padding:9px;border-radius:12px;border:1.5px solid var(--line);background:none;font-weight:700}
+.tabs button[aria-pressed=true]{background:var(--vio);border-color:var(--vio);color:#fff}
+.fold{width:100%;text-align:left;border:1.5px dashed var(--line);background:none;border-radius:14px;padding:10px 12px;color:var(--mute);margin-bottom:10px}
+.mine{margin-left:auto;max-width:80%;background:var(--vio);color:#fff;border-radius:16px 16px 4px 16px;padding:8px 13px;margin-bottom:8px;width:fit-content}
+.dec{border-left:5px solid var(--mint)}
+.dec b{font:700 .8em "Atkinson Hyperlegible";color:var(--mint)}
+.dec p{font:700 1.1em Syne;margin:2px 0}
+.val{font-weight:700;background:var(--bg);border-radius:10px;padding:8px 10px;margin:6px 0;user-select:none;-webkit-user-select:none;overflow-wrap:anywhere}
+.comp{padding:10px 16px;border-top:1.5px solid var(--line);background:var(--card);backdrop-filter:blur(12px)}
+.row{display:flex;gap:8px}
+input{flex:1;min-width:0;padding:11px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--bg);font:inherit;color:var(--ink)}
+.send{padding:0 18px;border:0;border-radius:99px;background:var(--vio);color:#fff;font-weight:700}
+.seal{background:var(--card);border:1.5px solid var(--mint);border-radius:12px;padding:8px 12px;margin-bottom:8px;font-size:.9em}
+.seal button{background:none;border:0;font-weight:700;color:var(--mint);text-decoration:underline;padding:0}
+.stk{display:flex;gap:10px;justify-content:space-around}
+.stk button{font-size:2em;width:64px;height:64px;border-radius:20px;border:1.5px solid var(--line);background:var(--bg)}
+.ov{position:fixed;inset:0;background:rgba(5,6,20,.6);display:flex;align-items:flex-end;justify-content:center;z-index:5}
+.sh{background:var(--bg);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));border:1.5px solid var(--line)}
+.sh h3{font:800 1.2em Syne;margin:0 0 10px}
+.sh li{margin-bottom:8px}
+.wave{display:flex;align-items:center;gap:2px;height:28px}.wave i{width:3px;border-radius:2px;background:var(--vio)}.mine .wave i{background:#fff}
+.mic{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--vio);background:none;font-size:1.2em;touch-action:none;flex:none}
+.vr{display:flex;gap:14px;justify-content:center;margin:8px 0 14px}.av{text-align:center}.av span{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--vio);color:#fff;font:800 1.2em Syne;margin:0 auto 4px}.av.sp span{animation:sp2 1.4s ease-in-out infinite}@keyframes sp2{50%{box-shadow:0 0 0 10px rgba(143,123,255,.28)}}
+@media(prefers-reduced-motion:reduce){.av.sp span{animation:none}}
+body.big{--fs:22px}
+body.big .orb{font-size:.7em}
+#toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:20px;font-size:.9em;opacity:0;pointer-events:none;transition:opacity .2s;text-align:center;max-width:90%}
+#toast.on{opacity:1}
+</style></head><body>
+<div id="app" style="display:contents"></div><div id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s),esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let uid=10;
+const D={
+launch:{n:'Launch team',ring:2,ang:-35,h:262,un:47,who:'Meera, Dev, Sana and 5 more',kid:0,
+ now:[{id:1,who:'Meera',x:'Can you confirm the 12 Dec date with the venue today?',need:1,vc:18},{id:2,who:'Dev',x:'Deck v3 needs your sign-off before Friday.',need:1}],
+ fold:{n:41,t:'reactions, GIFs, lunch plans',lines:['Sana: 😂😂','Dev: biryani or pizza?','Meera: 👍 on the date']},
+ dec:[{k:'Date',v:'Launch on 12 Dec',by:'Meera, 4 people agreed',auto:1},{k:'Venue',v:'Hyderabad office, 3rd floor',by:'Sana',auto:1},{k:'Task for you',v:'Sign off deck v3 by Friday',by:'Dev',auto:1}],vault:[]},
+priya:{n:'Priya',ring:1,ang:50,h:12,un:3,who:'Priya',kid:0,
+ now:[{id:3,who:'Priya',x:'Can you send the insurance details for the school form?',need:1}],
+ dec:[{k:'Deadline',v:'School form due Monday',by:'Priya',auto:1}],vault:[]},
+family:{n:'Family',ring:1,ang:165,h:160,un:12,who:'Mum, Dad, Aarav',kid:1,
+ now:[{id:4,who:'Mum',x:'Lunch on Sunday at 1?',need:0}],fold:{n:11,t:'photos and stickers',lines:['Dad: 📷','Aarav: 🎉']},dec:[{k:'Plan',v:'Sunday lunch at 1',by:'Mum',auto:1}],vault:[]},
+aarav:{n:'Aarav',ring:3,ang:235,h:200,un:0,who:'Aarav',kid:1,now:[],dec:[],vault:[]},
+dad:{n:'Dad',ring:3,ang:320,h:35,un:0,who:'Dad',kid:1,now:[],dec:[],vault:[]}};
+let S={v:'home',sp:null,tab:'now',lens:'std',fold:0,sheet:0};
+const sp=()=>D[S.sp],toast=x=>{const t=$('#toast');t.textContent=x;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2400)};
+const needs=()=>Object.entries(D).flatMap(([k,s])=>s.now.filter(m=>m.need).map(m=>({k,m})));
+function home(){const kid=S.lens=='kid',R={1:22,2:34,3:45};
+ const orbs=Object.entries(D).filter(([k,s])=>!kid||s.kid).map(([k,s])=>{const r=R[s.ring],a=s.ang*Math.PI/180,hot=s.now.some(m=>m.need);
+  return `<button class="orb ${hot?'pulse':''}" style="left:${50+r*Math.cos(a)}%;top:${50+r*Math.sin(a)}%;--s:${(S.lens=='big'?76:62)+Math.min(s.un,47)*.8}px;--h:${s.h}" data-a="open" data-v="${k}" aria-label="${s.n}, ${s.un} unread${hot?', waiting on you':''}">${esc(s.n)}${s.un?`<i>${s.un}</i>`:''}</button>`}).join('');
+ const w=needs().filter(x=>!kid||D[x.k].kid);
+ return `<header><h1>Orbit</h1><button class="pill" data-a="keys" aria-label="Your keys">🔑</button>${kid?'':`<button class="pill hot" data-a="catch">Catch me up</button>`}</header>${lens()}<main>
+ <div class="orbit">${[22,34,45].map(r=>`<div class="ring" style="width:${r*2}%;height:${r*2}%"></div>`).join('')}<div class="you">You</div>${orbs}</div>
+ <p class="cap">${kid?'Only people your parents approved are here.':'Closer means it matters sooner. A glow means someone is waiting on you.'}</p>
+ ${w.length?`<h2>Waiting on you</h2>`+w.map(x=>`<button class="card need wait" data-a="open" data-v="${x.k}"><b>${esc(D[x.k].n)}</b><p style="margin:2px 0 0">${esc(x.m.who)}: ${esc(x.m.x)}</p></button>`).join(''):'<div class="card">Nothing is waiting on you. Enjoy the quiet.</div>'}${kid?'':life()}</main>`}
+const L=[{i:'🩺',t:'Today 4:00 pm',n:'Dentist appointment',src:'Clinic email',bad:'Clashes with the Launch team call at 4:00 pm'},{i:'✈️',t:'Tomorrow 7:10 am',n:'Flight, Hyderabad to Mumbai',src:'Airline email',tip:'Leave home by 4:45 am. Web check-in is open.'},{i:'🎬',t:'Sun 22 Nov, 9:30 pm',n:'Movie, row F',src:'Ticket email',tip:'Tickets saved offline.'}];
+function life(){return `<h2>Coming up, from your email</h2>`+(S.mail?L.map(x=>`<div class="card ${x.bad?'need':''}"><b>${x.i} ${esc(x.n)}</b><p style="margin:2px 0">${esc(x.t)} <small>· ${esc(x.src)}</small></p>${x.bad?`<small>⚠ ${esc(x.bad)}</small><div class="acts" style="margin-top:8px"><button class="go" data-a="late">Tell Meera I’ll be late</button></div>`:`<small>${esc(x.tip)}</small>`}</div>`).join('')+`<p class="cap">Read on your device. Nest never stores your email.</p>`:`<div class="card"><b>Connect your inbox</b><p>Nest finds flights, appointments and tickets in your email and keeps them next to your chats. It reads mail on your device only.</p><div class="acts"><button class="go" data-a="mail">Connect inbox (read-only)</button></div></div>`)}
+const bars=n=>Array.from({length:28},(_,k)=>`<i style="height:${6+Math.abs(Math.sin(k*n))*18}px"></i>`).join('');
+const vn=x=>`<div class="mine"><div class="wave">${bars(x.voice)}</div><small style="color:#fff">🎤 ${x.voice}s · “${esc(x.t)}”</small></div>`;
+function voiceNote(d){const s=sp();(s.mine=s.mine||[]).push({voice:d,t:'Sure, I’ll send it tonight.'});draw()}
+function keysSheet(){return `<div class="ov" data-a="bg"><div class="sh" role="dialog" aria-label="Your keys"><h3>🔑 You own the key</h3><div class="card"><small>Your key fingerprint</small><div class="val">7F3A · 91C2 · D40E · 58B1</div><small>Made on this device. It never leaves it.</small></div><ul><li><b>Nest company copy:</b> none</li><li><b>Our servers see:</b> scrambled data only</li><li><b>Who can read your chats:</b> you and the people you chat with</li></ul><h4 style="margin:10px 0 6px">If you lose your phone</h4><div class="acts"><button data-a="phrase">12-word recovery phrase</button><button data-a="circle">Trusted circle (2 of 3)</button></div><p class="cap">No one can reset your key, not even us. That is what keeps it yours.</p><div class="acts"><button class="go" data-a="bg">Done</button></div></div></div>`}
+function voiceRoom(){const s=sp(),p=['You',...s.who.replace(' and ',', ').split(', ').filter(n=>!/more/.test(n)).slice(0,3)];return `<div class="ov" data-a="bg"><div class="sh" role="dialog" aria-label="Voice room"><h3>🎙 ${esc(s.n)} voice room</h3><div class="vr">${p.map((n,k)=>`<div class="av ${k==1?'sp':''}"><span>${esc(n[0])}</span><small>${esc(n)}</small></div>`).join('')}</div><div class="card"><small>Live captions</small><p style="margin:2px 0">“…so the venue says the 12th is free.”</p></div><div class="card dec"><b>Nest heard a decision</b><p>Launch on 12 Dec</p><div class="acts"><button class="go" data-a="vpin">Pin to Decided</button></div></div><div class="acts"><button data-a="mute">${S.mute?'Unmute':'Mute'}</button><button class="go" data-a="bg">Leave</button></div><p class="cap">Voice is end-to-end encrypted. Captions are made on your device.</p></div></div>`}
+function lens(){return `<div class="lens" role="group" aria-label="Choose a lens">${[['std','Standard'],['big','Big and simple'],['kid','Kid-safe']].map(([k,l])=>`<button data-a="lens" data-v="${k}" aria-pressed="${S.lens==k}">${l}</button>`).join('')}</div>`}
+function space(){const s=sp(),kid=S.lens=='kid';let c='';
+ if(S.tab=='now'){c+=s.now.map(m=>`<div class="card ${m.need?'need':''}"><b>${esc(m.who)}</b>${m.snz?' <small>(back at 6 pm)</small>':''}${m.vc?`<div class="wave">${bars(m.vc)}</div><small>🎤 Voice note, ${m.vc}s. Transcript:</small>`:''}<p>${esc(m.x)}</p>${m.need?`<div class="acts"><button class="go" data-a="reply">Reply</button><button data-a="later" data-v="${m.id}">Later</button><button data-a="pin" data-v="${m.id}">Pin as decision</button></div>`:''}</div>`).join('');
+  if(s.fold)c+=`<button class="fold" data-a="fold">${S.fold?'▾':'▸'} ${s.fold.n} quiet messages (${s.fold.t})</button>`+(S.fold?s.fold.lines.map(l=>`<div class="card"><small>${esc(l)}</small></div>`).join(''):'');
+  c+=(s.mine||[]).map(x=>x.voice?vn(x):`<div class="mine">${esc(x)}</div>`).join('')||(s.now.length?'':'<div class="card">No messages yet. Say hello.</div>')}
+ else if(S.tab=='dec')c=s.dec.length?s.dec.map(d=>`<div class="card dec"><b>${esc(d.k)}</b><p>${esc(d.v)}</p><small>${d.auto?'Found by Nest':'Pinned by you'} · ${esc(d.by)}</small></div>`).join(''):'<div class="card">Nothing decided yet.</div>';
+ else c=s.vault.map(v=>{const left=v.max-v.used,dead=v.rev||left<=0;return `<div class="card"><b>🔒 ${esc(v.l)}</b><div class="val">${v.show?esc(v.val):'•••• •••• ••••'}</div><small>${v.rev?'Revoked.':left<=0?'All views used. Hidden for good.':`Expires in 10 min · ${left} view left`}</small>${dead?'':`<div class="acts" style="margin-top:8px"><button class="go" data-a="hold" data-v="${v.id}">Hold to reveal</button><button data-a="rev" data-v="${v.id}">Revoke</button></div>`}</div>`}).join('')+`<div class="acts"><button class="go" data-a="seal0">Seal a private detail</button></div>`;
+ const comp=kid?`<div class="comp"><div class="stk">${['😀','👍','❤️','🎉'].map(e=>`<button data-a="say" data-v="${e}" aria-label="Send ${e}">${e}</button>`).join('')}</div></div>`:`<div class="comp"><div id="sl" class="seal" hidden>Looks private. <button data-a="sealit">Seal it so it disappears after one view</button></div><div class="row"><button class="mic" data-a="rec" aria-label="Hold to record a voice note">🎤</button><input id="inp" placeholder="Message ${esc(s.n)}" autocomplete="off" aria-label="Message"><button class="send" data-a="send">Send</button></div></div>`;
+ return `<div class="top2"><button class="pill" data-a="back" aria-label="Back to Orbit">←</button><div><b>${esc(s.n)}</b><div class="sub">${esc(s.who)}</div></div>${kid?'':`<button class="pill hot" style="margin-left:auto" data-a="voice">🎙 Voice room</button>`}</div>
+ <div class="tabs" role="group" aria-label="Views"><button data-a="tab" data-v="now" aria-pressed="${S.tab=='now'}">Now</button><button data-a="tab" data-v="dec" aria-pressed="${S.tab=='dec'}">Decided</button>${kid?'':`<button data-a="tab" data-v="vault" aria-pressed="${S.tab=='vault'}">Vault</button>`}</div><main>${c}</main>${comp}`}
+function draw(){document.body.classList.toggle('big',S.lens=='big');$('#app').innerHTML=(S.v=='home'?home():space())+(S.sheet==1?catchSheet():S.sheet=='keys'?keysSheet():S.sheet=='voice'?voiceRoom():'')}
+function catchSheet(){const n=needs(),dc=Object.values(D).reduce((a,s)=>a+s.dec.length,0),q=Object.values(D).reduce((a,s)=>a+(s.fold?s.fold.n:0),0);
+ return `<div class="ov" data-a="bg"><div class="sh" role="dialog" aria-label="Catch me up"><h3>Caught up in 10 seconds</h3><ul><li><b>${n.length} things need you:</b> ${n.map(x=>esc(x.m.x.split(' ').slice(0,5).join(' '))+'…').join(' · ')}</li><li><b>${dc} decisions</b> are already made and pinned. No scrolling to find them.</li>${S.mail?`<li><b>3 things coming up</b> from your email. 1 clash to fix: the dentist and the 4 pm team call.</li>`:''}<li><b>${q} quiet messages</b> are safe to ignore: reactions, GIFs, stickers.</li></ul><div class="acts"><button class="go" data-a="bg">Got it</button></div></div></div>`}
+function sens(){const i=$('#inp'),w=$('#sl');if(i&&w)w.hidden=!/(\d[ -]?){9,}|[A-Z]{2,4}-\d{3,}/.test(i.value)}
+document.addEventListener('input',e=>{if(e.target.id=='inp')sens()});
+document.addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id=='inp')act('send')});
+document.addEventListener('pointerdown',e=>{if(e.target.closest('[data-a=rec]')){S.rec=Date.now();toast('Recording… let go to send');return}const b=e.target.closest('[data-a=hold]');if(b){const v=sp().vault.find(x=>x.id==b.dataset.v);v.used++;v.show=1;draw()}});
+document.addEventListener('pointerup',()=>{if(S.rec){const d=Math.max(2,Math.round((Date.now()-S.rec)/1000));S.rec=0;voiceNote(d)}if(S.v!='space')return;let ch=0;sp().vault.forEach(v=>{if(v.show){v.show=0;ch=1}});if(ch)setTimeout(draw,0)});
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el)return;if(el.dataset.a=='bg'&&e.target!==el&&!e.target.closest('.go'))return;act(el.dataset.a,el.dataset.v)});
+function send(x,r){const s=sp();(s.mine=s.mine||[]).push(x);draw();if(r)setTimeout(()=>{s.now.push({id:uid++,who:s.n,x:r,need:0});draw()},1100)}
+function act(a,v){const s=S.sp?sp():null,m=s&&s.now.find(x=>x.id==v);
+ if(a=='open'){S.v='space';S.sp=v;S.tab='now';S.fold=0;draw()}
+ else if(a=='back'){S.v='home';draw()}
+ else if(a=='lens'){S.lens=v;S.v='home';draw()}
+ else if(a=='tab'){S.tab=v;draw()}
+ else if(a=='catch'||a=='bg'){S.sheet=a=='catch'?1:0;draw()}
+ else if(a=='fold'){S.fold=!S.fold;draw()}
+ else if(a=='keys'){S.sheet='keys';draw()}
+ else if(a=='voice'){S.sheet='voice';draw()}
+ else if(a=='mail'){S.mail=1;draw();toast('Inbox connected. Reading on this device only.')}
+ else if(a=='late')toast('Sent to Meera: “I’ll be 30 minutes late.”')
+ else if(a=='mute'){S.mute=!S.mute;draw()}
+ else if(a=='vpin'){s.dec.push({k:'Heard on call',v:'Launch on 12 Dec',by:'Voice room'});S.sheet=0;draw();toast('Pinned to Decided')}
+ else if(a=='phrase')toast('Shown once for you to write down. Nest never stores it.')
+ else if(a=='circle')toast('Priya, Dad and Meera each hold a locked piece. Any two can restore your key.')
+ else if(a=='reply')$('#inp')&&$('#inp').focus();
+ else if(a=='later'&&m){m.need=0;m.snz=1;draw();toast('Snoozed. It returns to Orbit at 6 pm.')}
+ else if(a=='pin'&&m){m.need=0;s.dec.push({k:'Pinned',v:m.x,by:m.who});draw();toast('Pinned to Decided')}
+ else if(a=='send'){const i=$('#inp');if(i.value.trim())send(i.value.trim(),'Got it 👍')}
+ else if(a=='say')send(v,v=='❤️'?'Love you too!':'');
+ else if(a=='sealit'||a=='seal0'){const i=$('#inp');s.vault.push({id:uid++,l:'Insurance policy number',val:(i&&i.value.trim())||'POL-4821-7730',max:1,used:0});if(i)i.value='';S.tab='vault';draw();toast('Sealed. Priya gets one view, then it’s gone.')}
+ else if(a=='rev'){const x=s.vault.find(y=>y.id==v);x.rev=1;draw()}}
+draw();
+</script></body></html>
